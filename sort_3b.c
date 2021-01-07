@@ -41,17 +41,16 @@ void swap(int *t, int n, int i,int j){
 /*@	requires n>0;
 
     requires valid: \valid_read(t+(0..n-1));
-     assigns t[0..n-1];
+     
     behavior sorted:
     	
-	    assumes \forall integer k; 0 <= k <n ==> (t[k] == 0 ||t[k] == 1 || t[k] == 2);
-		ensures (\forall integer a; 0<=a <n ==> (\exists integer b; 0<= b < n ==> \at(t[b],Old)== \at(t[a],Here) ));
-        ensures Sorted(t,n);
+      assigns t[0..n-1];
+        ensures Sorted(t,n) && isOkay(t,n);
        
     behavior permutation:
-        assumes \exists integer k; 0 <= k <n && (t[k] != 0 && t[k] != 1 && t[k] != 2);   
-        ensures (\forall integer a; 0<=a <n ==> (\exists integer b; 0<= b < n ==> \at(t[b],Old)== \at(t[a],Here) )); 
+      assigns t[0..n-1];
         ensures Permut(t,n);
+     
     complete behaviors;                                                         
     disjoint behaviors;
   */
@@ -75,6 +74,9 @@ void sort(int *t, int n){
     loop invariant \exists integer z; 0 <= z <i &&  t[z]==2 ==> ok == 1;
     
     loop invariant check_ok: \exists integer k; 0 <= k <i ==>  (t[k] != 0 && t[k] != 1 && t[k] != 2) && ok == 0 ||(t[k] == 0 && t[k] == 1 && t[k] == 2) && ok == 1;  
+    
+    loop invariant \forall integer i ; t[i] == 0||1||2 && ok == 1;
+    
     loop assigns i,ok;
     loop variant n-i;
 */
@@ -88,15 +90,16 @@ void sort(int *t, int n){
       //@ assert ok==0;
     }
   }
+  
+   
 
- //@assert ok == 0 || ok ==1;
+ 
 
   if (ok == 0) {
    //@ assert ok==0;
 /*@
     loop invariant bound: 0 <= i <= n;
     loop invariant belong_3_values: \forall integer k; 0 <= k < i ==> t[k] == 0;
-    loop invariant \forall integer b; 0 <= b <i &&  (t[b] <0 && t[b] > 2) ==> ok == 0;
     loop assigns i,t[0..n-1];
     loop variant n-i;
 */
@@ -106,18 +109,19 @@ void sort(int *t, int n){
     for(i=0;i<n;i++){
       t[i] = 0;
       
-/*@
-      assert t[i]==0;
+/*
+      @assert t[i]==0;
+     
 */
 
  
 
     }
-
+// @assert \forall integer i; t[i] == 0;
  
 
   } else {
-   //@assert ok != 0;
+   //@assert ok == 1;
     int zeros = 0;
     int twos = n-1;
     i = 0;
