@@ -12,7 +12,7 @@ void swap(int *t, int n, int i,int j){
 /*@
     predicate Sorted{L}(int* arr, integer head, integer tail) =
     \forall integer i;  \forall integer j;
-      (head <= i < tail-1 && i < j < tail) ==> ( (arr[i] == 0 ||arr[i] == 1 || arr[i] == 2) && arr[i] <= arr[i+1] && (arr[j] == 0 ||arr[j] == 1 || arr[j] == 2) && arr[i] <= arr[j]);
+      (head <= i < tail-1 && i < j < tail) ==> ( (arr[i] == 0 ||arr[i] == 1 || arr[i] == 2)  && (arr[j] == 0 ||arr[j] == 1 || arr[j] == 2) && arr[i] <= arr[j]);
 */
 /*@
     predicate AllZero{L}(int* arr, integer length) =
@@ -32,7 +32,7 @@ void swap(int *t, int n, int i,int j){
     behavior All_Zero:
         assumes \exists integer k; 0 <= k <n && (t[k] != 0 && t[k] != 1 && t[k] != 2);    
         assigns t[0..n-1];
-        ensures AllZero(\old(t),n);
+        ensures AllZero(t,n);
     complete behaviors;                                                         
     disjoint behaviors;
   */
@@ -47,14 +47,14 @@ void sort(int *t, int n){
 /*@
     loop invariant bound: 0 <= i <= n;
     loop invariant one_zero: ok==0 || ok==1;
- 	loop invariant check_ok: \forall integer k; (0 <= k <i) ==>  (((t[k] == 0 ||t[k] == 1 || t[k] == 2)&& ok == \at(ok, LoopCurrent)) || (ok == 0 && (t[k] != 0 && t[k] != 1 && t[k] != 2)));
+    loop invariant ok == 1 ==> (\forall integer k; 0 <= k < i ==> (t[k] == 0 ||t[k] == 1 || t[k] == 2));
     loop assigns i,ok;
     loop variant n-i;
 */
 
  
   for(i=0;i<n;i++){
-//@assert (ok==0 || ok==1);
+	//@assert (ok==0 || ok==1);
     if (t[i] != 0 && t[i] != 1 && t[i] != 2) {
       ok = 0;
       //@assert ok==0;
@@ -96,8 +96,8 @@ void sort(int *t, int n){
     i = 0;
 /*@
 	loop invariant 0 <= i <= twos+1;
-	loop invariant Sorted(t,0,i+1);
-	loop invariant \forall integer j; 0 <=  j < zeros ==>  t[j] == 0;
+	loop invariant Sorted(t,0,i);
+	loop invariant zeros > 0 ==> \forall integer j; 0 <=  j < zeros ==>  t[j] == 0;
     loop invariant \forall integer l; zeros <=  l < i ==>  t[l] == 1;
     loop invariant \forall integer m; twos <  m < n ==>  t[m] == 2;
 	loop assigns i,zeros,twos, t[0..n-1];
@@ -108,12 +108,13 @@ void sort(int *t, int n){
 
 
     while (i <= twos) {
+
       if (t[i] == 0) {
 
  
 
     swap(t,n,zeros,i);
-    //@assert t[zeros]==0;
+    //@assert t[zeros] == 0;
     
     zeros++;
     i++;
@@ -123,18 +124,16 @@ void sort(int *t, int n){
     swap(t,n,twos,i);
     //@assert t[twos]==2;
    
-    
     twos--;
       }
       else {
         i++;
  	}
+ 	
     }
   }
   return;
 }
 
  
-
-
 
