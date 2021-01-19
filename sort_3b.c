@@ -1,7 +1,11 @@
 /*@
-    assigns t[i],t[j];
-    ensures t[j] == \old(t[i])&& t[i] == \old(t[j]);
+	assigns t[i], t[j];
+	
+	ensures t[i] == \old(t[j]) && t[j] == \old(t[i]);
+	ensures \forall integer k; 0 <= k < n && k != i && k != j ==> \old(t[k]) == t[k];
+	
 */
+
 void swap(int *t, int n, int i,int j){
   int tmp;
   tmp = t[i];
@@ -12,7 +16,7 @@ void swap(int *t, int n, int i,int j){
 /*@
     predicate Sorted{L}(int* arr, integer head, integer tail) =
     \forall integer i;  \forall integer j;
-      (head <= i < tail-1 && i < j < tail) ==> ( (arr[i] == 0 ||arr[i] == 1 || arr[i] == 2)  && (arr[j] == 0 ||arr[j] == 1 || arr[j] == 2) && arr[i] <= arr[j]);
+      (head <= i < tail-1 && i < j < tail) ==> arr[i] <= arr[j];
 */
 /*@
     predicate AllZero{L}(int* arr, integer length) =
@@ -47,7 +51,8 @@ void sort(int *t, int n){
 /*@
     loop invariant bound: 0 <= i <= n;
     loop invariant one_zero: ok==0 || ok==1;
-    loop invariant ok == 1 ==> (\forall integer k; 0 <= k < i ==> (t[k] == 0 ||t[k] == 1 || t[k] == 2));
+    loop invariant ok == 0 ==> (\exists integer i; 0 <= i < n ==> (t[i] != 0 && t[i] != 1 && t[i] != 2));
+  	loop invariant ok == 1 ==> (\forall integer k; 0 <= k < i ==> (t[k] == 0 ||t[k] == 1 || t[k] == 2));
     loop assigns i,ok;
     loop variant n-i;
 */
@@ -89,25 +94,27 @@ void sort(int *t, int n){
 
   } else {
 //@assert  ok==1;
-//@assert \forall integer k; 0 <= k < n==>(t[k] == 0 ||t[k] == 1 || t[k] == 2);
+//@assert \forall integer k; 0 <= k < n==> (t[k] == 0 ||t[k] == 1 || t[k] == 2);
 
     int zeros = 0;
     int twos = n-1;
     i = 0;
 /*@
-	loop invariant 0 <= i <= twos+1;
-	loop invariant Sorted(t,0,i);
-	loop invariant zeros > 0 ==> \forall integer j; 0 <=  j < zeros ==>  t[j] == 0;
-    loop invariant \forall integer l; zeros <=  l < i ==>  t[l] == 1;
-    loop invariant \forall integer m; twos <  m < n ==>  t[m] == 2;
 	loop assigns i,zeros,twos, t[0..n-1];
-	loop variant twos - i + 1;
+	loop invariant 0 <= i <= twos+1;
+	loop invariant 0<=zeros <= i;
+  	loop invariant (i-1)<=twos<n;
+  	loop invariant \forall integer k; 0 <= k < i ==> (t[k] == 0 ||t[k] == 1 || t[k] == 2); 
+  	loop invariant \forall integer a; 0 <= a < zeros ==> t[a] == 0;
+  	loop invariant \forall integer a; twos < a < n ==> t[a] == 2;
+  	loop variant twos-i;
 */
 
  
 
 
     while (i <= twos) {
+     //@assert (t[i] == 0 ||t[i] == 1 || t[i] == 2);
 
       if (t[i] == 0) {
 
@@ -115,7 +122,7 @@ void sort(int *t, int n){
 
     swap(t,n,zeros,i);
     //@assert t[zeros] == 0;
-    
+    //@assert (t[i] == 0 ||t[i] == 1 || t[i] == 2);
     zeros++;
     i++;
       }
@@ -123,14 +130,17 @@ void sort(int *t, int n){
 
     swap(t,n,twos,i);
     //@assert t[twos]==2;
-   
+   //@assert (t[i] == 0 ||t[i] == 1 || t[i] == 2);
     twos--;
       }
       else {
         i++;
+    //@assert (t[i] == 0 ||t[i] == 1 || t[i] == 2);
  	}
  	
     }
+    //@assert \forall integer k; 0 <= k < n==>(t[k] == 0 ||t[k] == 1 || t[k] == 2);
+    
   }
   return;
 }
